@@ -15,16 +15,16 @@ while True:
             pygame.quit()
             exit()
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_a]:  # Левая стрелка
+    if keys[pygame.K_a]:  
         x -= speed
-    if keys[pygame.K_d]:  # Правая стрелка
+    if keys[pygame.K_d]:  
         x += speed
-    if keys[pygame.K_w]:  # Верхняя стрелка
+    if keys[pygame.K_w]:  
         y -= speed
-    if keys[pygame.K_s]:  # Нижняя стрелка
+    if keys[pygame.K_s]:  
         y += speed
-    x = max(50, min(x, 1350))  # 50 — радиус мяча, 1350 — ширина экрана - радиус
-    y = max(50, min(y, 950))   # 50 — радиус, 950 — высота экрана - радиус
+    x = max(50, min(x, 1350))  
+    y = max(50, min(y, 950))   
     screen.fill((255, 255, 255)) 
     pygame.draw.circle(screen,RED,(x,y),50)
     pygame.display.update()
