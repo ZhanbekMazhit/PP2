@@ -75,9 +75,9 @@ def game():
     
     # Разные типы еды
     food_types = {
-        "normal": {"color": white, "score": 10, "timer": 500},
-        "bonus": {"color": yellow, "score": 20, "timer": 300},
-        "bad": {"color": red, "score": -10, "timer": 200}
+        "normal": {"color": white, "score": 10, "timer": 5},
+        "bonus": {"color": yellow, "score": 20, "timer": 3},
+        "bad": {"color": red, "score": -10, "timer": 2}
     }
 
     # Функция для появления еды
