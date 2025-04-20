@@ -12,6 +12,8 @@ print("7-deleting data by username or phone")
 print("8-all records based on a pattern")
 print("9-many new users by list of name and phone")
 print("10-pagination LIMIT: b — how many rows to return OFFSET:a — which row to start with")
+print("11-procedure insert data")
+print("12-delete_user by procedure")
 
 num = int(input("input the number: "))
 try:
@@ -113,19 +115,19 @@ try:
                 "Delete FROM pp2 WHERE number = %s", (number,)
                 )
         connection.commit()
-    if num == 8:
+    def all_records():
         n = input("Input 'name' to search by name, or anything else to search by number: ")
         with connection.cursor() as cursor:
             if n.lower() == "name":
                 name=input("input the name: ")
                 cursor.execute(f"SELECT * FROM pp2 WHERE name like'{name}%'")
                 for row in cursor.fetchall():
-                    print(row)
+                    return row
             else:
                 number = input("Input the number: ")
                 cursor.execute(f"SELECT * FROM pp2 WHERE number like'{number}%'")
                 for row in cursor.fetchall():
-                    print(row)
+                    return row
     if  num == 9:
         minibook = {}
         n = int(input("input number of people: "))
@@ -141,7 +143,7 @@ try:
                 )
             print("[INFO] ")
         connection.commit()
-    if  num == 10:
+    def pagination():
         n=input("input b: ")
         na=input("input what times a: ")
         with connection.cursor() as cursor:
@@ -153,6 +155,34 @@ try:
             for row in results:
                 print(row)
         connection.commit()
+    if num == 8:
+       p = all_records()
+       print(p)
+    if num == 10:
+        p = pagination()
+        print(p)
+    def add_or_update():
+        name = input("Enter name: ")
+        number = input("Enter phone: ")
+        with connection.cursor() as cursor:  # <--- вот тут создаётся cursor
+            cursor.execute("CALL add_or_update(%s, %s)", (name, number))
+            connection.commit()
+            print("User inserted or updated successfully.")
+    def delete_user():
+        name = input("Enter name (leave empty if not using): ").strip()
+        number = input("Enter phone (leave empty if not using): ").strip()
+
+    # Заменяем пустую строку на None
+        name = name if name else None
+        number = number if number else None
+        with connection.cursor() as cursor:
+            cursor.execute("CALL delete_user(%s, %s)", (name, number))
+            connection.commit()
+            print("User deleted (if existed).")
+    if num == 12:
+        delete_user()
+    if num == 11:
+        add_or_update()
 except Exception as ex:
     print("[INFO] Error working with PostgreSQL",ex)
 finally:
