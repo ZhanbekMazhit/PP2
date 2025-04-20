@@ -9,6 +9,9 @@ print("4-upload data from csv file")
 print("5-change user first name or phone")
 print("6-Querying data")
 print("7-deleting data by username or phone")
+print("8-all records based on a pattern")
+print("9-many new users by list of name and phone")
+print("10-pagination LIMIT: b — how many rows to return OFFSET:a — which row to start with")
 
 num = int(input("input the number: "))
 try:
@@ -110,23 +113,46 @@ try:
                 "Delete FROM pp2 WHERE number = %s", (number,)
                 )
         connection.commit()
-    if num == 6:
+    if num == 8:
         n = input("Input 'name' to search by name, or anything else to search by number: ")
         with connection.cursor() as cursor:
             if n.lower() == "name":
-                nam = input("Input the name: ")
-                cursor.execute(
-                    "SELECT * FROM pp2 WHERE name = %s", (nam,)
-                )
-                result = cursor.fetchone()
+                name=input("input the name: ")
+                cursor.execute(f"SELECT * FROM pp2 WHERE name like'{name}%'")
+                for row in cursor.fetchall():
+                    print(row)
             else:
                 number = input("Input the number: ")
+                cursor.execute(f"SELECT * FROM pp2 WHERE number like'{number}%'")
+                for row in cursor.fetchall():
+                    print(row)
+    if  num == 9:
+        minibook = {}
+        n = int(input("input number of people: "))
+        for x in range(n):
+            name = input("input person: ")
+            number = input("input number: ")
+            minibook[name] = number
+        with connection.cursor() as cursor:
+            for name, number in minibook.items():
                 cursor.execute(
-                    "SELECT * FROM pp2 WHERE number = %s", (number,)
+                "INSERT INTO pp2 (name, number) VALUES (%s, %s)",
+                (name, number)
                 )
-            result = cursor.fetchall()
-
-        print(result)
+            print("[INFO] ")
+        connection.commit()
+    if  num == 10:
+        n=input("input b: ")
+        na=input("input what times a: ")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM pp2 ORDER BY id LIMIT %s OFFSET %s",(n,na)
+            )
+            print("[INFO] succesfully")
+            results = cursor.fetchall()
+            for row in results:
+                print(row)
+        connection.commit()
 except Exception as ex:
     print("[INFO] Error working with PostgreSQL",ex)
 finally:
