@@ -1,109 +1,118 @@
 import psycopg2
 import csv
+from config import user,password,db_name,host
 
-# Connection config
-conn = psycopg2.connect(
-    host="localhost",
-    dbname="suppliers",
-    user="postgres",
-    password="k15b11tu06"
-)
-cur = conn.cursor()
+print("1-Create the table inpit")
+print("2-Delete the table inpit")
+print("3-entering from console")
+print("4-upload data from csv file")
+print("5-change user first name or phone")
+print("6-Querying data")
+print("7-deleting data by username or phone")
 
-# 1. Create the table
-def create_table():
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS phonebook (
-            id SERIAL PRIMARY KEY,
-            first_name VARCHAR(50),
-            phone VARCHAR(20) UNIQUE
-        );
-    """)
-    conn.commit()
-
-# 2. Insert from CSV
-def insert_from_csv(file_path):
-    with open(file_path, newline='') as csvfile:
-        reader = csv.reader(csvfile)
-        for row in reader:
-            try:
-                cur.execute("INSERT INTO phonebook (first_name, phone) VALUES (%s, %s)", (row[0], row[1]))
-            except Exception as e:
-                print(f"Error inserting {row}: {e}")
-    conn.commit()
-
-# 3. Insert from console
-def insert_from_console():
-    first_name = input("Enter name: ")
-    phone = input("Enter phone: ")
-    try:
-        cur.execute("INSERT INTO phonebook (first_name, phone) VALUES (%s, %s)", (first_name, phone))
-        conn.commit()
-    except Exception as e:
-        print(f"Error: {e}")
-
-# 4. Update a record
-def update_user():
-    phone_or_name = input("Update by (phone or name)? ").lower()
-    if phone_or_name == "phone":
-        phone = input("Enter existing phone: ")
-        new_name = input("New name: ")
-        cur.execute("UPDATE phonebook SET first_name = %s WHERE phone = %s", (new_name, phone))
-    else:
-        name = input("Enter existing name: ")
-        new_phone = input("New phone: ")
-        cur.execute("UPDATE phonebook SET phone = %s WHERE first_name = %s", (new_phone, name))
-    conn.commit()
-
-# 5. Query data with filters
-def query_data():
-    keyword = input("Search for name or phone: ")
-    cur.execute("SELECT * FROM phonebook WHERE first_name ILIKE %s OR phone ILIKE %s", (f"%{keyword}%", f"%{keyword}%"))
-    for row in cur.fetchall():
-        print(row)
-
-# 6. Delete by username or phone
-def delete_user():
-    by = input("Delete by (name or phone)? ").lower()
-    if by == "name":
-        name = input("Enter name to delete: ")
-        cur.execute("DELETE FROM phonebook WHERE first_name = %s", (name,))
-    else:
-        phone = input("Enter phone to delete: ")
-        cur.execute("DELETE FROM phonebook WHERE phone = %s", (phone,))
-    conn.commit()
-
-# Main loop
-def main():
-    create_table()
-
-    while True:
-        print("\n1. Insert from CSV")
-        print("2. Insert from Console")
-        print("3. Update User")
-        print("4. Query Data")
-        print("5. Delete User")
-        print("6. Exit")
-        choice = input("Choose an action: ")
-
-        if choice == "1":
-            path = input("Enter CSV path: ")
-            insert_from_csv(path)
-        elif choice == "2":
-            insert_from_console()
-        elif choice == "3":
-            update_user()
-        elif choice == "4":
-            query_data()
-        elif choice == "5":
-            delete_user()
-        elif choice == "6":
-            break
+num = int(input("input the number: "))
+try:
+    connection = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
+    # 1. Create the table
+    if num == 1:
+        table_name = input("input table: ")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""CREATE TABLE {table_name} (
+                    id serial PRIMARY KEY,
+                    name varchar(50) NOT NULL,
+                    number varchar(20) NOT NULL)"""
+            )
+            print("[INFO] Table created succesfully")
+        connection.commit()
+    if  num == 2:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "DROP TABLE IF EXISTS lab"
+            )
+            print("[INFO] Table deleted succesfully")
+        connection.commit()
+    if  num == 3:
+        name = input("input the name: ")
+        phone = input("input the phone: ")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""INSERT INTO pp2 (name,number) VALUES(
+                    '{name}',{phone})"""
+            )
+            print("[INFO] Data created succesfully")
+        connection.commit()
+    if num == 4:
+        path = input("input path: ")
+        with open(path, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            with connection.cursor() as cursor:
+                for row in reader:
+                    cursor.execute(
+                    "INSERT INTO pp2 (name, number) VALUES (%s, %s)",
+                    (row['name'], row['number'])
+            )
+            print("[INFO] Data created succesfully")
+        connection.commit()
+    if  num == 5:
+        n = input("name or number: ")
+        if n == "name":
+            num = input("input the existing number: ")
+            nam = input("input new name: ")
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE pp2 SET name = %s WHERE number = %s", (nam, num)
+            )
+            print("[INFO] name changed succesfully")
         else:
-            print("Invalid choice.")
+            nam = input("input the existing name: ")
+            num = input("input new numbe: ")
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE pp2 SET number = %s WHERE name = %s", (num, nam)
+            )
+            print("[INFO] number changed succesfully")
+        connection.commit()
+    if num == 6:
+        n = input("Input 'name' to search by name, or anything else to search by number: ")
+        with connection.cursor() as cursor:
+            if n.lower() == "name":
+                nam = input("Input the name: ")
+                cursor.execute(
+                    "SELECT number FROM pp2 WHERE name = %s", (nam,)
+                )
+                result = cursor.fetchone()
+            else:
+                number = input("Input the number: ")
+                cursor.execute(
+                    "SELECT name FROM pp2 WHERE number = %s", (number,)
+                )
+            result = cursor.fetchall()
 
-    cur.close()
-    conn.close()
-
-if __name__ == "__main__":
-    main()
+        print(result)
+    connection.commit()
+    if num == 7:
+        n = input("Input 'name' to delete by name, or anything else to delete by number: ").lower()
+        with connection.cursor() as cursor:
+            if n.lower() == "name":
+                nam = input("Input the name: ")
+                cursor.execute(
+                "Delete FROM pp2 WHERE name = %s", (nam,)
+                )
+            else:
+                number = input("Input the number: ")
+                cursor.execute(
+                "Delete FROM pp2 WHERE number = %s", (number,)
+                )
+        connection.commit()
+except Exception as ex:
+    print("[INFO] Error working with PostgreSQL",ex)
+finally:
+    if connection:
+        connection.close()
+        print("[INFO] PostgreSQL connection closed")
